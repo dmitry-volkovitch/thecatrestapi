@@ -9,6 +9,14 @@ import java.util.Set;
 import org.thecatrestapi.api.util.property.ISearchProperties;
 import org.thecatrestapi.dto.CatMainInfo;
 
+/**
+ * The class that let to config search query without work with strings.
+ * It automatically generates the necessary string based on the specified 
+ * properties of the object.
+ * 
+ * @author Dima Volkovich
+ *
+ */
 public class CatSearchQuery {
 	private static final String COMMA = ",";
 	private static final String AMPERSAND = "&";
