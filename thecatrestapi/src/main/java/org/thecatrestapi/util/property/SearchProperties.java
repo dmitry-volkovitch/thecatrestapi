@@ -3,12 +3,17 @@ package org.thecatrestapi.util.property;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 import org.thecatrestapi.api.util.property.ISearchProperties;
 import org.thecatrestapi.domain.Order;
 
 @Component
 public class SearchProperties implements ISearchProperties {
+	private static final Logger LOGGER = LogManager.getLogger(SearchProperties.class);
+	private static final String LOG_MESSAGE = "IOException. Default properties have been loaded!";
+
 	private static final String PATH_TO_PROPERTIES = "src/main/resources/search_url.properties";
 
 	private static final String SEARCH_URL = "searchUrl";
@@ -29,9 +34,8 @@ public class SearchProperties implements ISearchProperties {
 		try {
 			properties = PropertiesLoader.load(PATH_TO_PROPERTIES);
 		} catch (IOException e) {
-			//
-			e.printStackTrace();
 			properties = new Properties(DEFAULT_PROPERTIES);
+			LOGGER.warn(LOG_MESSAGE, e);
 		}
 	}
 
@@ -39,9 +43,8 @@ public class SearchProperties implements ISearchProperties {
 		try {
 			properties = PropertiesLoader.load(pathToProperties);
 		} catch (IOException e) {
-			//
-			e.printStackTrace();
 			properties = new Properties(DEFAULT_PROPERTIES);
+			LOGGER.warn(LOG_MESSAGE, e);
 		}
 	}
 

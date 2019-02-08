@@ -5,12 +5,17 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thecatrestapi.api.service.ICatDownloadService;
-import org.thecatrestapi.api.util.ICatParamParser;
 import org.thecatrestapi.api.util.IDownloader;
 import org.thecatrestapi.api.util.IUrlParser;
+import org.thecatrestapi.api.util.property.IHeaderProperties;
+import org.thecatrestapi.api.util.property.IPathProperties;
+import org.thecatrestapi.api.util.property.ISearchProperties;
+import org.thecatrestapi.domain.CatSearchQuery;
 import org.thecatrestapi.dto.CatMainInfo;
 import org.thecatrestapi.util.CatUrl;
 
@@ -19,37 +24,42 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class CatDownloadService implements ICatDownloadService {
-	private static final String THE_CAT_API_SEARCH_URL = "https://api.thecatapi.com/v1/images/search?";
+	private static final Logger LOGGER = LogManager.getLogger(CatDownloadService.class);
+
 	private static final String HEADER_NAME = "x-api-key";
-	private static final String HEADER_VALUE = "31255f06-49d3-4889-a7d5-b607af395589";
 
 	@Autowired
 	private IDownloader downloader;
 	@Autowired
 	private IUrlParser urlParser;
 	@Autowired
-	private ICatParamParser catParamParser;
+	private ISearchProperties searchProperties;
+	@Autowired
+	private IPathProperties pathProperties;
+	@Autowired
+	private IHeaderProperties headerProperties;
+
+	private ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+			false);
 
 	@Override
 	public String[] downloadCats(CatMainInfo catInfo) {
 		try {
-			String urlString = THE_CAT_API_SEARCH_URL + catParamParser.parseCatToParamString(catInfo);
-			ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-					false);
-			URLConnection urlConnection = new URL(urlString).openConnection();
-			urlConnection.addRequestProperty(HEADER_NAME, HEADER_VALUE);
+			CatSearchQuery searchQuery = new CatSearchQuery(catInfo, searchProperties);
+			URLConnection urlConnection = new URL(searchQuery.initQuery()).openConnection();
+			urlConnection.addRequestProperty(HEADER_NAME, headerProperties.getHeaderValue(HEADER_NAME));
+			
 			CatUrl[] catUrls = mapper.readValue(urlConnection.getInputStream(), CatUrl[].class);
 			String[] fileNames = new String[catUrls.length];
 			for (int i = 0; i < catUrls.length; i++) {
 				String fileName = urlParser.getFileName(catUrls[i].getUrl());
-				fileNames[i] = fileName;
-				downloader.download(catUrls[i].getUrl(), fileName);
+				fileNames[i] = downloader.download(catUrls[i].getUrl(), pathProperties.getPathToImages(), fileName);
 			}
 			return fileNames;
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
+			LOGGER.error(e.getMessage(), e);
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOGGER.error(e.getMessage(), e);
 		}
 		return null;
 	}

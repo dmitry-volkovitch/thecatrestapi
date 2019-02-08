@@ -5,6 +5,6 @@ import java.io.IOException;
 
 public interface IDownloader {
 	
-	String download(String url, String fileName) throws FileNotFoundException, IOException;
+	String download(String url, String folderName, String fileName) throws FileNotFoundException, IOException;
 
 }

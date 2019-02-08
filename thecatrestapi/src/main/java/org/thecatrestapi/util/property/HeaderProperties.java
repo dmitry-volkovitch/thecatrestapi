@@ -5,11 +5,16 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 import org.thecatrestapi.api.util.property.IHeaderProperties;
 
 @Component
 public class HeaderProperties implements IHeaderProperties {
+	private static final Logger LOGGER = LogManager.getLogger(HeaderProperties.class);
+	private static final String LOG_MESSAGE = "IOException. Default properties have been loaded!";
+	
 	private static final String PATH_TO_PROPERTIES = "src/main/resources/header.properties";
 	private static final Properties DEFAULT_PROPERTIES;
 
@@ -26,9 +31,8 @@ public class HeaderProperties implements IHeaderProperties {
 		try {
 			properties = PropertiesLoader.load(PATH_TO_PROPERTIES);
 		} catch (IOException e) {
-			//
-			e.printStackTrace();
 			properties = new Properties(DEFAULT_PROPERTIES);
+			LOGGER.warn(LOG_MESSAGE, e);
 		}
 	}
 
@@ -36,9 +40,8 @@ public class HeaderProperties implements IHeaderProperties {
 		try {
 			properties = PropertiesLoader.load(pathToProperties);
 		} catch (IOException e) {
-			//
-			e.printStackTrace();
 			properties = new Properties(DEFAULT_PROPERTIES);
+			LOGGER.warn(LOG_MESSAGE, e);
 		}
 	}
 
